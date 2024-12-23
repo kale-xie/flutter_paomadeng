@@ -1,0 +1,27 @@
+name: flutter_paomadeng
+description: A marquee text display application
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.2
+  flutter_colorpicker: ^1.0.3
+  image_picker: ^1.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  riverpod_generator: ^2.3.9
+  build_runner: ^2.4.8
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
