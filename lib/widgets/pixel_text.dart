@@ -17,7 +17,7 @@ class PixelText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.pressStart2p(
+      style: GoogleFonts.dotGothic16(
         fontSize: fontSize,
         color: textColor,
         height: 1.0,

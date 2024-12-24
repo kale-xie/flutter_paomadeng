@@ -60,6 +60,8 @@ class HomeScreen extends ConsumerWidget {
                         DropdownMenuItem(value: 'led', child: Text('LED样式')),
                         DropdownMenuItem(value: 'neon', child: Text('霓虹样式')),
                         DropdownMenuItem(value: 'pixel', child: Text('像素字体')),
+                        DropdownMenuItem(value: 'cartoon', child: Text('卡通字体')),
+                        DropdownMenuItem(value: '3d', child: Text('3D字体')),
                         DropdownMenuItem(value: 'normal', child: Text('普通样式')),
                       ],
                       onChanged: (value) => ref.read(marqueeProvider.notifier).setFontStyle(value!),

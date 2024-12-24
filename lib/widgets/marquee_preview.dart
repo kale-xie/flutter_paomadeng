@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'led_text.dart';
 import 'pixel_text.dart';
+import 'cartoon_text.dart';
+import 'three_d_text.dart';
 
 class MarqueePreview extends StatefulWidget {
   final String text;
@@ -36,13 +38,23 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
   double _textWidth = 0;
   double _containerWidth = 0;
 
+  void _startAnimation() {
+    if (!widget.isPlaying) return;
+    
+    _controller
+      ..forward();
+  }
+
   void _updateAnimation() {
     final duration = Duration(milliseconds: (widget.speed * 1000).toInt().clamp(100, 30000));
     _controller.duration = duration;
+    
     if (widget.isPlaying) {
-      _controller
-        ..reset()
-        ..repeat();
+      if (_controller.status == AnimationStatus.dismissed) {
+        _controller.forward();
+      } else {
+        _controller.forward(from: _controller.value);
+      }
     }
   }
 
@@ -65,7 +77,7 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
     _controller = AnimationController(
       duration: Duration(milliseconds: (widget.speed * 1000).toInt().clamp(100, 30000)),
       vsync: this,
-    )..repeat();
+    );
 
     _animation = Tween<Offset>(
       begin: const Offset(1.0, 0.0),
@@ -75,40 +87,51 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
       curve: Curves.linear,
     ));
 
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && widget.isPlaying && mounted) {
+        _controller.forward(from: 0.0);
+      }
+    });
+
     _measureText();
+    if (widget.isPlaying) {
+      _controller.forward();
+    }
   }
 
   @override
   void didUpdateWidget(MarqueePreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.text != widget.text || 
+    
+    bool needsUpdate = oldWidget.text != widget.text || 
         oldWidget.textColor != widget.textColor ||
         oldWidget.fontSize != widget.fontSize ||
         oldWidget.speed != widget.speed ||
         oldWidget.isPlaying != widget.isPlaying ||
         oldWidget.backgroundImage != widget.backgroundImage ||
-        oldWidget.backgroundColor != widget.backgroundColor) {
-      
+        oldWidget.backgroundColor != widget.backgroundColor;
+
+    if (needsUpdate) {
       if (oldWidget.speed != widget.speed) {
         _updateAnimation();
       }
       
       if (oldWidget.isPlaying != widget.isPlaying) {
         if (widget.isPlaying) {
-          _controller.repeat();
+          _controller.forward();
         } else {
           _controller.stop();
         }
       }
       
+      if (oldWidget.text != widget.text || oldWidget.fontSize != widget.fontSize) {
+        if (widget.isPlaying) {
+          _controller.forward(from: 0.0);
+        }
+      }
+      
       _measureText();
     }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -125,6 +148,20 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
         break;
       case 'pixel':
         textWidget = PixelText(
+          text: widget.text,
+          fontSize: widget.fontSize,
+          textColor: widget.textColor,
+        );
+        break;
+      case 'cartoon':
+        textWidget = CartoonText(
+          text: widget.text,
+          fontSize: widget.fontSize,
+          textColor: widget.textColor,
+        );
+        break;
+      case '3d':
+        textWidget = ThreeDText(
           text: widget.text,
           fontSize: widget.fontSize,
           textColor: widget.textColor,
@@ -187,12 +224,10 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
                 alignment: Alignment.center,
                 child: SlideTransition(
                   position: _animation,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 50),
-                    child: Container(
-                      key: _textKey,
-                      child: textWidget,
-                    ),
+                  child: Container(
+                    key: _textKey,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: textWidget,
                   ),
                 ),
               ),
@@ -201,5 +236,11 @@ class _MarqueePreviewState extends State<MarqueePreview> with SingleTickerProvid
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 } 
