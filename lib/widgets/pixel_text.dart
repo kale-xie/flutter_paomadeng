@@ -17,17 +17,13 @@ class PixelText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.pressStart2p(  // 使用像素风格字体
+      style: GoogleFonts.pressStart2p(
         fontSize: fontSize,
         color: textColor,
-        shadows: [
-          Shadow(
-            color: textColor.withOpacity(0.5),
-            offset: const Offset(2, 2),
-            blurRadius: 0,
-          ),
-        ],
+        height: 1.0,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.visible,
     );
   }
 } 

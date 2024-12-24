@@ -63,7 +63,7 @@ class _FontSizeDialogState extends State<FontSizeDialog> {
                   onChanged: (value) {
                     if (value.isNotEmpty) {
                       double size = double.parse(value);
-                      if (size >= 12 && size <= 72) {
+                      if (size >= 12 && size <= 200) {
                         _updateFontSize(size);
                       }
                     }
@@ -76,7 +76,7 @@ class _FontSizeDialogState extends State<FontSizeDialog> {
           Slider(
             value: _fontSize,
             min: 12,
-            max: 72,
+            max: 200,
             divisions: 60,
             label: _fontSize.toStringAsFixed(0),
             onChanged: _updateFontSize,
@@ -89,7 +89,7 @@ class _FontSizeDialogState extends State<FontSizeDialog> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '预览文字',
+              '字',
               style: TextStyle(fontSize: _fontSize),
             ),
           ),

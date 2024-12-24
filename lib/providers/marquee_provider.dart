@@ -12,6 +12,8 @@ class MarqueeState {
   final double speed;
   final Color backgroundColor;
   final String? backgroundImage;
+  final double ledFlashRate;
+  final double ledGlowIntensity;
 
   const MarqueeState({
     this.text = '',
@@ -21,6 +23,8 @@ class MarqueeState {
     this.speed = 10,
     this.backgroundColor = Colors.white,
     this.backgroundImage,
+    this.ledFlashRate = 1.0,
+    this.ledGlowIntensity = 1.0,
   });
 
   MarqueeState copyWith({
@@ -31,6 +35,8 @@ class MarqueeState {
     double? speed,
     Color? backgroundColor,
     String? backgroundImage,
+    double? ledFlashRate,
+    double? ledGlowIntensity,
   }) {
     return MarqueeState(
       text: text ?? this.text,
@@ -40,6 +46,8 @@ class MarqueeState {
       speed: speed ?? this.speed,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       backgroundImage: backgroundImage ?? this.backgroundImage,
+      ledFlashRate: ledFlashRate ?? this.ledFlashRate,
+      ledGlowIntensity: ledGlowIntensity ?? this.ledGlowIntensity,
     );
   }
 }
@@ -78,16 +86,23 @@ class Marquee extends _$Marquee {
   }
 
   void setBackgroundImage(String? path) {
-    if (path == null) {
-      state = state.copyWith(
-        backgroundImage: null,
-        backgroundColor: state.backgroundColor,
-      );
-    } else {
-      state = state.copyWith(
-        backgroundImage: path,
-        backgroundColor: Colors.transparent,
-      );
-    }
+    state = MarqueeState(
+      text: state.text,
+      fontStyle: state.fontStyle,
+      textColor: state.textColor,
+      fontSize: state.fontSize,
+      speed: state.speed,
+      backgroundColor: state.backgroundColor,
+      backgroundImage: path,
+      ledFlashRate: state.ledFlashRate,
+      ledGlowIntensity: state.ledGlowIntensity,
+    );
+  }
+
+  void setLedStyle(double flashRate, double glowIntensity) {
+    state = state.copyWith(
+      ledFlashRate: flashRate,
+      ledGlowIntensity: glowIntensity,
+    );
   }
 } 

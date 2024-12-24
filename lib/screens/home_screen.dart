@@ -6,6 +6,8 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../widgets/font_size_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/speed_control_dialog.dart';
+import '../widgets/led_style_dialog.dart';
+import 'display_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -14,87 +16,152 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final marqueeState = ref.watch(marqueeProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('跑马灯设置'),
-      ),
-      body: Column(
-        children: [
-          Padding(
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('跑马灯设置'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '输入显示文字',
-              ),
-              onChanged: (value) => ref.read(marqueeProvider.notifier).setText(value),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // 字体样式选择
-          DropdownButton<String>(
-            value: marqueeState.fontStyle,
-            items: const [
-              DropdownMenuItem(value: 'led', child: Text('LED样式')),
-              DropdownMenuItem(value: 'neon', child: Text('霓虹样式')),
-              DropdownMenuItem(value: 'pixel', child: Text('像素字体')),
-              DropdownMenuItem(value: 'normal', child: Text('普通样式')),
-            ],
-            onChanged: (value) => ref.read(marqueeProvider.notifier).setFontStyle(value!),
-          ),
-          // 颜色选择器
-          ElevatedButton(
-            onPressed: () => _showColorPicker(context, ref),
-            child: const Text('选择颜色'),
-          ),
-          // 大小调节滑块
-          ElevatedButton(
-            onPressed: () => _showFontSizeDialog(context, ref),
-            child: const Text('调整字体大小'),
-          ),
-          // 速度控制按钮
-          ElevatedButton(
-            onPressed: () => _showSpeedDialog(context, ref),
-            child: const Text('调整滚动速度'),
-          ),
-          // 添加背景设置按钮
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => _showBackgroundColorPicker(context, ref),
-                child: const Text('设置背景颜色'),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () => _pickBackgroundImage(context, ref),
-                child: const Text('选择背景图片'),
-              ),
-              // 添加清除背景图片按钮，只在有背景图片时显示
-              if (ref.watch(marqueeProvider).backgroundImage != null) ...[
-                const SizedBox(width: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 输入框
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Focus(
+                    child: TextFormField(
+                      autofocus: false,
+                      initialValue: marqueeState.text,
+                      decoration: const InputDecoration(
+                        labelText: '输入文字',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        ref.read(marqueeProvider.notifier).setText(value);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // 字体样式选择
+                Row(
+                  children: [
+                    const Text('字体样式：'),
+                    const SizedBox(width: 10),
+                    DropdownButton<String>(
+                      value: marqueeState.fontStyle,
+                      items: const [
+                        DropdownMenuItem(value: 'led', child: Text('LED样式')),
+                        DropdownMenuItem(value: 'neon', child: Text('霓虹样式')),
+                        DropdownMenuItem(value: 'pixel', child: Text('像素字体')),
+                        DropdownMenuItem(value: 'normal', child: Text('普通样式')),
+                      ],
+                      onChanged: (value) => ref.read(marqueeProvider.notifier).setFontStyle(value!),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // 控制按钮组
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _showColorPicker(context, ref);
+                      },
+                      child: const Text('选择颜色'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _showFontSizeDialog(context, ref);
+                      },
+                      child: const Text('调整字体大小'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _showSpeedDialog(context, ref);
+                      },
+                      child: const Text('调整滚动速度'),
+                    ),
+                    if (marqueeState.fontStyle == 'led')
+                      ElevatedButton(
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                          _showLedStyleDialog(context, ref);
+                        },
+                        child: const Text('LED样式设置'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // 背景设置按钮
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _showBackgroundColorPicker(context, ref);
+                      },
+                      child: const Text('设置背景颜色'),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _pickBackgroundImage(context, ref);
+                      },
+                      child: const Text('选择背景图片'),
+                    ),
+                    if (ref.watch(marqueeProvider).backgroundImage != null) ...[
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                          ref.read(marqueeProvider.notifier).setBackgroundImage(null);
+                        },
+                        child: const Text('删除背景图片'),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 40),
+
+                // 完成按钮
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: () {
-                    ref.read(marqueeProvider.notifier).setBackgroundImage(null);
+                    // 移除焦点并收起键盘
+                    FocusScope.of(context).unfocus();
+                    
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const DisplayScreen(),
+                      ),
+                    );
                   },
-                  child: const Text('清除背景图片'),
+                  child: const Text('开始展示', style: TextStyle(fontSize: 18)),
                 ),
               ],
-            ],
-          ),
-          // 预览区域
-          Expanded(
-            child: MarqueePreview(
-              text: marqueeState.text,
-              textColor: marqueeState.textColor,
-              fontSize: marqueeState.fontSize,
-              speed: marqueeState.speed,
-              backgroundColor: marqueeState.backgroundColor,
-              backgroundImage: marqueeState.backgroundImage,
-              fontStyle: marqueeState.fontStyle,
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -178,5 +245,18 @@ class HomeScreen extends ConsumerWidget {
     if (pickedFile != null) {
       ref.read(marqueeProvider.notifier).setBackgroundImage(pickedFile.path);
     }
+  }
+
+  void _showLedStyleDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => LedStyleDialog(
+        flashRate: ref.read(marqueeProvider).ledFlashRate,
+        glowIntensity: ref.read(marqueeProvider).ledGlowIntensity,
+        onStyleChanged: (flashRate, glowIntensity) {
+          ref.read(marqueeProvider.notifier).setLedStyle(flashRate, glowIntensity);
+        },
+      ),
+    );
   }
 } 

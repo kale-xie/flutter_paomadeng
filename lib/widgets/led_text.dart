@@ -19,19 +19,35 @@ class LedText extends StatefulWidget {
 
 class _LedTextState extends State<LedText> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _opacityAnimation;
+  late Animation<Color?> _colorAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
-    )..repeat();
+    )..repeat(reverse: true);
 
-    _animation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
+    // 闪烁动画
+    _opacityAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.4, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.4)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
+
+    // 颜色渐变动画
+    _colorAnimation = ColorTween(
+      begin: widget.textColor,
+      end: widget.textColor.withOpacity(0.6),
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -47,55 +63,79 @@ class _LedTextState extends State<LedText> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
+      animation: _controller,
       builder: (context, child) {
         return Stack(
           children: [
-            // LED 发光文字
+            // 外发光效果
             Text(
               widget.text,
-              style: GoogleFonts.orbitron(  // 使用 Google Fonts 的 Orbitron 字体
+              style: GoogleFonts.orbitron(
                 fontSize: widget.fontSize,
-                color: widget.textColor.withOpacity(_animation.value),
+                color: Colors.transparent,
                 shadows: [
-                  // 内发光
+                  // 主要发光
                   Shadow(
-                    color: widget.textColor.withOpacity(_animation.value * 0.8),
-                    blurRadius: 0,
+                    color: widget.textColor.withOpacity(_opacityAnimation.value * 0.5),
+                    blurRadius: 20,
                     offset: const Offset(0, 0),
                   ),
-                  // 外发光 1
+                  // 扩散发光
                   Shadow(
-                    color: widget.textColor.withOpacity(_animation.value * 0.5),
-                    blurRadius: 15,
+                    color: widget.textColor.withOpacity(_opacityAnimation.value * 0.3),
+                    blurRadius: 30,
+                    offset: const Offset(0, 0),
                   ),
-                  // 外发光 2
+                  // 强烈中心光
                   Shadow(
-                    color: widget.textColor.withOpacity(_animation.value * 0.3),
-                    blurRadius: 25,
+                    color: widget.textColor.withOpacity(_opacityAnimation.value * 0.8),
+                    blurRadius: 5,
+                    offset: const Offset(0, 0),
                   ),
                 ],
               ),
+              maxLines: 1,
+              overflow: TextOverflow.visible,
             ),
-            // LED 点阵效果
+            // LED 主体效果
             ShaderMask(
               shaderCallback: (Rect bounds) {
                 return LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    widget.textColor.withOpacity(_animation.value),
-                    widget.textColor.withOpacity(_animation.value * 0.8),
+                    widget.textColor.withOpacity(_opacityAnimation.value),
+                    _colorAnimation.value ?? widget.textColor,
+                    widget.textColor.withOpacity(_opacityAnimation.value * 0.8),
                   ],
-                  stops: const [0.0, 1.0],
+                  stops: const [0.0, 0.5, 1.0],
                 ).createShader(bounds);
               },
               child: Text(
                 widget.text,
-                style: GoogleFonts.orbitron(  // 这里也使用 Orbitron 字体
+                style: GoogleFonts.orbitron(
                   fontSize: widget.fontSize,
                   color: Colors.white,
                   letterSpacing: 2.0,
+                  fontWeight: FontWeight.bold,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.visible,
               ),
+            ),
+            // 高光效果
+            Text(
+              widget.text,
+              style: GoogleFonts.orbitron(
+                fontSize: widget.fontSize,
+                foreground: Paint()
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 0.5
+                  ..color = Colors.white.withOpacity(_opacityAnimation.value * 0.3),
+                letterSpacing: 2.0,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.visible,
             ),
           ],
         );
